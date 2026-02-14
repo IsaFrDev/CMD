@@ -1,0 +1,1055 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>DevOps Command Center</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Outfit:wght@300;400;600;800&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      --bg-base: #0a0e1a;
+      --bg-elevated: #0f1421;
+      --bg-panel: #141927;
+      --bg-input: #1a1f2e;
+      --text-primary: #e4e9f7;
+      --text-secondary: #a0aec0;
+      --text-dim: #6b7280;
+      --accent-primary: #10b981;
+      --accent-hover: #059669;
+      --accent-glow: rgba(16, 185, 129, 0.4);
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --info: #3b82f6;
+      --border: rgba(255, 255, 255, 0.08);
+      --border-focus: rgba(16, 185, 129, 0.3);
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
+      --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+      --font-sans: 'Outfit', system-ui, -apple-system, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html,
+    body {
+      height: 100%;
+      overflow: hidden;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background: var(--bg-base);
+      color: var(--text-primary);
+      line-height: 1.6;
+    }
+
+    /* Animated background */
+    .bg-gradient {
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 1400px 900px at 25% 15%, rgba(16, 185, 129, 0.15), transparent 50%),
+        radial-gradient(ellipse 1200px 800px at 80% 70%, rgba(59, 130, 246, 0.12), transparent 55%),
+        radial-gradient(ellipse 1000px 700px at 50% 100%, rgba(139, 92, 246, 0.08), transparent 60%),
+        var(--bg-base);
+      z-index: 0;
+    }
+
+    .noise {
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 1;
+      opacity: 0.4;
+    }
+
+    .app-container {
+      position: relative;
+      z-index: 2;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding: 16px;
+      gap: 16px;
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 24px;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      box-shadow: var(--shadow-md);
+      backdrop-filter: blur(20px);
+    }
+
+    .logo-section {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .logo {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, var(--accent-primary), #059669);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 20px;
+      color: white;
+      box-shadow: 0 0 20px var(--accent-glow);
+    }
+
+    .title-group h1 {
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, var(--text-primary), var(--text-secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .title-group p {
+      font-size: 12px;
+      color: var(--text-dim);
+      font-weight: 300;
+      margin-top: 2px;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .status-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      font-size: 13px;
+      font-family: var(--font-mono);
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent-primary);
+      box-shadow: 0 0 12px var(--accent-glow);
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+
+      50% {
+        opacity: 0.7;
+        transform: scale(1.1);
+      }
+    }
+
+    .btn {
+      padding: 10px 18px;
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text-primary);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: var(--font-sans);
+    }
+
+    .btn:hover {
+      background: var(--bg-input);
+      border-color: var(--border-focus);
+      transform: translateY(-1px);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent-primary), #059669);
+      border: none;
+      color: white;
+      font-weight: 600;
+    }
+
+    .btn-primary:hover {
+      background: linear-gradient(135deg, var(--accent-hover), #047857);
+      box-shadow: 0 0 20px var(--accent-glow);
+    }
+
+    /* Main content */
+    .main-content {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 300px 1fr;
+      gap: 16px;
+      overflow: hidden;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      overflow-y: auto;
+      padding-right: 6px;
+    }
+
+    .sidebar::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .sidebar::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .sidebar::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 3px;
+    }
+
+    .metric-card {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px;
+      box-shadow: var(--shadow-sm);
+      transition: all 0.3s;
+    }
+
+    .metric-card:hover {
+      border-color: var(--border-focus);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .metric-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .metric-label {
+      font-size: 12px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 600;
+    }
+
+    .metric-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+
+    .metric-value {
+      font-size: 32px;
+      font-weight: 800;
+      font-family: var(--font-mono);
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+
+    .metric-trend {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .trend-up {
+      color: var(--accent-primary);
+    }
+
+    .trend-down {
+      color: var(--danger);
+    }
+
+    /* Terminal */
+    .terminal-container {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      box-shadow: var(--shadow-md);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .terminal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(0, 0, 0, 0.2);
+    }
+
+    .terminal-dots {
+      display: flex;
+      gap: 8px;
+    }
+
+    .term-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+    }
+
+    .term-dot.red {
+      background: #ff5f57;
+    }
+
+    .term-dot.yellow {
+      background: #febc2e;
+    }
+
+    .term-dot.green {
+      background: #28c840;
+    }
+
+    .terminal-title {
+      font-size: 13px;
+      font-family: var(--font-mono);
+      color: var(--text-secondary);
+      letter-spacing: 0.03em;
+    }
+
+    .terminal-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .term-btn {
+      padding: 6px 12px;
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 11px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: var(--font-mono);
+    }
+
+    .term-btn:hover {
+      background: var(--bg-input);
+      color: var(--text-primary);
+    }
+
+    .terminal-output {
+      flex: 1;
+      padding: 18px;
+      overflow-y: auto;
+      font-family: var(--font-mono);
+      font-size: 14px;
+      line-height: 1.6;
+      scrollbar-width: thin;
+      scrollbar-color: var(--border) transparent;
+    }
+
+    .terminal-output::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .terminal-output::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .terminal-output::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 4px;
+    }
+
+    .output-line {
+      margin-bottom: 4px;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .output-line.success {
+      color: var(--accent-primary);
+    }
+
+    .output-line.error {
+      color: var(--danger);
+    }
+
+    .output-line.warning {
+      color: var(--warning);
+    }
+
+    .output-line.info {
+      color: var(--info);
+    }
+
+    .output-line.dim {
+      color: var(--text-dim);
+    }
+
+    .prompt-line {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--accent-primary);
+      font-weight: 500;
+    }
+
+    .terminal-input-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 18px;
+      border-top: 1px solid var(--border);
+      background: rgba(0, 0, 0, 0.3);
+    }
+
+    .prompt-symbol {
+      color: var(--accent-primary);
+      font-family: var(--font-mono);
+      font-weight: 700;
+      font-size: 14px;
+      user-select: none;
+    }
+
+    .terminal-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text-primary);
+      font-family: var(--font-mono);
+      font-size: 14px;
+      caret-color: var(--accent-primary);
+    }
+
+    .terminal-input::placeholder {
+      color: var(--text-dim);
+    }
+
+    .cursor {
+      display: inline-block;
+      width: 8px;
+      height: 16px;
+      background: var(--accent-primary);
+      margin-left: 2px;
+      animation: blink 1s step-end infinite;
+    }
+
+    @keyframes blink {
+      50% {
+        opacity: 0;
+      }
+    }
+
+    /* AI styles removed */
+
+    /* Responsive */
+    @media (max-width: 1200px) {
+      .main-content {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 12px;
+      }
+
+      .ai-panel {
+        width: calc(100% - 32px);
+        max-width: 500px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .app-container {
+        padding: 8px;
+        gap: 8px;
+      }
+
+      .header {
+        padding: 12px 16px;
+      }
+
+      .logo-section {
+        gap: 10px;
+      }
+
+      .title-group h1 {
+        font-size: 16px;
+      }
+
+      .header-actions {
+        gap: 6px;
+      }
+
+      .status-badge {
+        padding: 6px 12px;
+        font-size: 11px;
+      }
+
+      .btn {
+        padding: 8px 14px;
+        font-size: 13px;
+      }
+
+      .fab {
+        width: 56px;
+        height: 56px;
+        right: 16px;
+        bottom: 16px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="bg-gradient"></div>
+  <div class="noise"></div>
+
+  <div class="app-container">
+    <!-- Header -->
+    <header class="header">
+      <div class="logo-section">
+        <div class="logo">⚡</div>
+        <div class="title-group">
+          <h1>DevOps Command Center</h1>
+          <p>AI-Powered Infrastructure Management</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <div class="status-badge">
+          <span class="status-dot"></span>
+          <span id="uptime">0s</span>
+        </div>
+        <button class="btn" onclick="toggleTheme()">🌙</button>
+        <button class="btn btn-primary" onclick="runHealthCheck()">Health Check</button>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Sidebar Metrics -->
+      <aside class="sidebar">
+        <div class="metric-card">
+          <div class="metric-header">
+            <span class="metric-label">CPU Usage</span>
+            <div class="metric-icon" style="background: rgba(16, 185, 129, 0.1); color: var(--accent-primary);">💻</div>
+          </div>
+          <div class="metric-value" id="cpu">0%</div>
+          <div class="metric-trend trend-up">
+            <span>↗</span>
+            <span id="cpu-trend">+0%</span>
+          </div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-header">
+            <span class="metric-label">Memory</span>
+            <div class="metric-icon" style="background: rgba(59, 130, 246, 0.1); color: var(--info);">🧠</div>
+          </div>
+          <div class="metric-value" id="memory">0 GB</div>
+          <div class="metric-trend trend-up">
+            <span>↗</span>
+            <span id="mem-trend">+0 MB</span>
+          </div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-header">
+            <span class="metric-label">Active Processes</span>
+            <div class="metric-icon" style="background: rgba(245, 158, 11, 0.1); color: var(--warning);">⚙️</div>
+          </div>
+          <div class="metric-value" id="processes">0</div>
+          <div class="metric-trend trend-down">
+            <span>↘</span>
+            <span id="proc-trend">-0</span>
+          </div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-header">
+            <span class="metric-label">Network I/O</span>
+            <div class="metric-icon" style="background: rgba(139, 92, 246, 0.1); color: #8b5cf6;">🌐</div>
+          </div>
+          <div class="metric-value" id="network">0 KB/s</div>
+          <div class="metric-trend trend-up">
+            <span>↗</span>
+            <span id="net-trend">+0 KB/s</span>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Terminal -->
+      <div class="terminal-container">
+        <div class="terminal-header">
+          <div class="terminal-dots">
+            <div class="term-dot red"></div>
+            <div class="term-dot yellow"></div>
+            <div class="term-dot green"></div>
+          </div>
+          <div class="terminal-title">root@devops:~#</div>
+          <div class="terminal-actions">
+            <button class="term-btn" onclick="clearTerminal()">Clear</button>
+            <button class="term-btn" onclick="showHelp()">Help</button>
+            <button class="term-btn" onclick="exportLogs()">Export</button>
+          </div>
+        </div>
+        <div class="terminal-output" id="terminal-output"></div>
+        <div class="terminal-input-row">
+          <span class="prompt-symbol">❯</span>
+          <input type="text" class="terminal-input" id="terminal-input" placeholder="Type a command (help for list)..."
+            autocomplete="off" spellcheck="false" />
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- AI panel and floating action button removed -->
+
+  <script>
+    // =============================================
+    // STATE MANAGEMENT
+    // =============================================
+    const state = {
+      uptime: 0,
+      metrics: {
+        cpu: 0,
+        memory: 0,
+        processes: 0,
+        network: 0
+      },
+      history: [],
+      historyIndex: -1,
+      aiMessages: []
+    };
+
+    // =============================================
+    // SYSTEM MONITORING (SIMULATED)
+    // =============================================
+    function updateMetrics() {
+      // Simulate realistic metrics with gradual changes
+      state.metrics.cpu = Math.max(0, Math.min(100, state.metrics.cpu + (Math.random() - 0.5) * 8));
+      state.metrics.memory = Math.max(0, Math.min(16, state.metrics.memory + (Math.random() - 0.5) * 0.3));
+      state.metrics.processes = Math.max(100, Math.min(500, state.metrics.processes + Math.floor((Math.random() - 0.5) * 10)));
+      state.metrics.network = Math.max(0, state.metrics.network + (Math.random() - 0.6) * 50);
+
+      document.getElementById('cpu').textContent = state.metrics.cpu.toFixed(1) + '%';
+      document.getElementById('memory').textContent = state.metrics.memory.toFixed(2) + ' GB';
+      document.getElementById('processes').textContent = state.metrics.processes.toString();
+      document.getElementById('network').textContent = state.metrics.network.toFixed(0) + ' KB/s';
+
+      // Update trends (simplified)
+      document.getElementById('cpu-trend').textContent = `${state.metrics.cpu > 50 ? '+' : ''}${(Math.random() * 5).toFixed(1)}%`;
+      document.getElementById('mem-trend').textContent = `+${(Math.random() * 100).toFixed(0)} MB`;
+      document.getElementById('proc-trend').textContent = `-${Math.floor(Math.random() * 5)}`;
+      document.getElementById('net-trend').textContent = `+${(Math.random() * 30).toFixed(0)} KB/s`;
+    }
+
+    function updateUptime() {
+      state.uptime++;
+      const hours = Math.floor(state.uptime / 3600);
+      const minutes = Math.floor((state.uptime % 3600) / 60);
+      const seconds = state.uptime % 60;
+      const display = hours > 0
+        ? `${hours}h ${minutes}m ${seconds}s`
+        : minutes > 0
+          ? `${minutes}m ${seconds}s`
+          : `${seconds}s`;
+      document.getElementById('uptime').textContent = display;
+    }
+
+    // Initialize metrics
+    state.metrics.cpu = 35 + Math.random() * 20;
+    state.metrics.memory = 4 + Math.random() * 3;
+    state.metrics.processes = 200 + Math.floor(Math.random() * 100);
+    state.metrics.network = Math.random() * 100;
+    updateMetrics();
+
+    setInterval(updateMetrics, 2000);
+    setInterval(updateUptime, 1000);
+
+    // =============================================
+    // TERMINAL FUNCTIONALITY
+    // =============================================
+    const terminalOutput = document.getElementById('terminal-output');
+    const terminalInput = document.getElementById('terminal-input');
+
+    function appendOutput(text, className = '') {
+      const line = document.createElement('div');
+      line.className = `output-line ${className}`;
+      line.innerHTML = text;
+      terminalOutput.appendChild(line);
+      terminalOutput.scrollTop = terminalOutput.scrollHeight;
+    }
+
+    function appendPrompt(command) {
+      const line = document.createElement('div');
+      line.className = 'prompt-line';
+      line.innerHTML = `<span>❯</span> <span>${escapeHtml(command)}</span>`;
+      terminalOutput.appendChild(line);
+      terminalOutput.scrollTop = terminalOutput.scrollHeight;
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    function clearTerminal() {
+      terminalOutput.innerHTML = '';
+      appendOutput('Terminal cleared.', 'dim');
+    }
+
+    function showHelp() {
+      const helpText = `
+<span style="color: var(--accent-primary); font-weight: 700;">Available Commands:</span>
+
+<span style="color: var(--text-secondary);">System Operations:</span>
+  status        - Show system status
+  health        - Run health check
+  metrics       - Display detailed metrics
+  logs [n]      - Show last n log entries (default: 10)
+  processes     - List running processes
+  
+<span style="color: var(--text-secondary);">AI Operations:</span>
+  ai [query]    - Query AI assistant
+  analyze       - AI-powered system analysis
+  optimize      - Get optimization suggestions
+  
+<span style="color: var(--text-secondary);">Utilities:</span>
+  clear         - Clear terminal
+  help          - Show this help
+  history       - Command history
+  export        - Export logs
+  theme         - Toggle dark/light theme
+  
+<span style="color: var(--text-secondary);">Easter Eggs:</span>
+  matrix        - Enter the matrix
+  hack          - Hacker mode
+  fortune       - Random quote
+      `.trim();
+
+      appendOutput(helpText, 'info');
+    }
+
+    async function executeCommand(command) {
+      if (!command.trim()) return;
+
+      state.history.push(command);
+      state.historyIndex = state.history.length;
+      appendPrompt(command);
+
+      const [cmd, ...args] = command.trim().toLowerCase().split(/\s+/);
+
+      switch (cmd) {
+        case 'help':
+          showHelp();
+          break;
+
+        case 'clear':
+        case 'cls':
+          clearTerminal();
+          break;
+
+        case 'status':
+          appendOutput(`<span style="color: var(--accent-primary);">System Status:</span>
+CPU: ${state.metrics.cpu.toFixed(1)}% | Memory: ${state.metrics.memory.toFixed(2)} GB
+Processes: ${state.metrics.processes} | Network: ${state.metrics.network.toFixed(0)} KB/s
+Uptime: ${document.getElementById('uptime').textContent}`, 'success');
+          break;
+
+        case 'health':
+          await runHealthCheck();
+          break;
+
+        case 'metrics':
+          appendOutput(`<span style="color: var(--accent-primary);">Detailed Metrics:</span>
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CPU Usage:       ${state.metrics.cpu.toFixed(1)}%
+Memory Usage:    ${state.metrics.memory.toFixed(2)} / 16.00 GB
+Active Processes: ${state.metrics.processes}
+Network I/O:     ${state.metrics.network.toFixed(0)} KB/s
+Uptime:          ${document.getElementById('uptime').textContent}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`, 'info');
+          break;
+
+        case 'logs':
+          const count = parseInt(args[0]) || 10;
+          appendOutput(`<span style="color: var(--warning);">Last ${count} log entries:</span>
+[${new Date().toISOString()}] INFO: System health check passed
+[${new Date().toISOString()}] INFO: CPU usage normal (${state.metrics.cpu.toFixed(1)}%)
+[${new Date().toISOString()}] INFO: Memory usage optimal
+[${new Date().toISOString()}] WARN: Network latency detected
+[${new Date().toISOString()}] INFO: All services running`, 'dim');
+          break;
+
+        case 'processes':
+          appendOutput(`<span style="color: var(--info);">Running Processes (${state.metrics.processes}):</span>
+  PID    NAME              CPU%   MEM%
+  1234   nginx             2.1    0.5
+  5678   node-server      15.3    2.1
+  9012   postgres         8.7    1.9
+  3456   redis            3.2    0.8
+  7890   docker           5.1    1.2`, 'info');
+          break;
+
+        case 'ai':
+          if (args.length === 0) {
+            appendOutput('Usage: ai [your question]', 'warning');
+          } else {
+            await sendAIQuery(args.join(' '));
+          }
+          break;
+
+        case 'analyze':
+          await analyzeSystem();
+          break;
+
+        case 'optimize':
+          appendOutput(`<span style="color: var(--accent-primary);">AI Optimization Suggestions:</span>
+✓ CPU usage is within normal range
+✓ Consider scaling memory if usage exceeds 80%
+✓ ${state.metrics.processes} processes running - optimal
+✓ Network performance is good
+→ Recommendation: Monitor CPU trends over next hour`, 'success');
+          break;
+
+        case 'history':
+          if (state.history.length === 0) {
+            appendOutput('No command history.', 'dim');
+          } else {
+            const historyText = state.history.slice(-10).map((h, i) =>
+              `  ${i + 1}. ${h}`
+            ).join('\n');
+            appendOutput(`<span style="color: var(--text-secondary);">Command History:</span>\n${historyText}`, 'dim');
+          }
+          break;
+
+        case 'export':
+          exportLogs();
+          break;
+
+        case 'theme':
+          toggleTheme();
+          appendOutput('Theme toggled.', 'success');
+          break;
+
+        case 'matrix':
+          startMatrix();
+          break;
+
+        case 'hack':
+          await hackerMode();
+          break;
+
+        case 'fortune':
+          const fortunes = [
+            "The best way to predict the future is to invent it.",
+            "Code is like humor. When you have to explain it, it's bad.",
+            "First, solve the problem. Then, write the code.",
+            "Any fool can write code that a computer can understand. Good programmers write code that humans can understand.",
+            "Experience is the name everyone gives to their mistakes."
+          ];
+          appendOutput(`💭 ${fortunes[Math.floor(Math.random() * fortunes.length)]}`, 'info');
+          break;
+
+        default:
+          appendOutput(`Command not found: ${cmd}. Type 'help' for available commands.`, 'error');
+      }
+    }
+
+    async function runHealthCheck() {
+      appendOutput('<span style="color: var(--info);">Running health check...</span>', 'info');
+
+      const checks = [
+        { name: 'CPU', status: 'OK', time: 150 },
+        { name: 'Memory', status: 'OK', time: 120 },
+        { name: 'Disk', status: 'OK', time: 200 },
+        { name: 'Network', status: 'OK', time: 180 },
+        { name: 'Database', status: 'OK', time: 250 }
+      ];
+
+      for (const check of checks) {
+        await sleep(check.time);
+        appendOutput(`✓ ${check.name.padEnd(15)} [${check.status}]`, 'success');
+      }
+
+      appendOutput('\n<span style="color: var(--accent-primary);">All systems operational!</span>', 'success');
+    }
+
+    async function startMatrix() {
+      appendOutput('<span style="color: var(--accent-primary);">Entering Matrix mode... Press ESC to exit</span>', 'info');
+      const chars = '01アイウエオカキクケコ';
+      let running = true;
+
+      const stop = () => { running = false; };
+      document.addEventListener('keydown', function escHandler(e) {
+        if (e.key === 'Escape') {
+          stop();
+          document.removeEventListener('keydown', escHandler);
+          appendOutput('Matrix mode exited.', 'dim');
+        }
+      });
+
+      for (let i = 0; i < 20 && running; i++) {
+        const line = Array.from({ length: 80 }, () =>
+          chars[Math.floor(Math.random() * chars.length)]
+        ).join('');
+        appendOutput(`<span style="color: var(--accent-primary);">${line}</span>`, '');
+        await sleep(100);
+      }
+    }
+
+    async function hackerMode() {
+      const sequences = [
+        'Initializing neural network...',
+        'Bypassing firewall... [OK]',
+        'Cracking encryption... 47%... 89%... [DONE]',
+        'Accessing mainframe...',
+        'Downloading classified files...',
+        'Covering tracks...',
+        'Mission accomplished! 😎'
+      ];
+
+      for (const seq of sequences) {
+        appendOutput(seq, 'success');
+        await sleep(Math.random() * 500 + 300);
+      }
+    }
+
+    function sleep(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    function exportLogs() {
+      const logs = terminalOutput.innerText;
+      const blob = new Blob([logs], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `devops-logs-${Date.now()}.txt`;
+      a.click();
+      URL.revokeObjectURL(url);
+      appendOutput('Logs exported successfully.', 'success');
+    }
+
+    // Terminal input handling
+    terminalInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        executeCommand(terminalInput.value);
+        terminalInput.value = '';
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        if (state.historyIndex > 0) {
+          state.historyIndex--;
+          terminalInput.value = state.history[state.historyIndex];
+        }
+      } else if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        if (state.historyIndex < state.history.length - 1) {
+          state.historyIndex++;
+          terminalInput.value = state.history[state.historyIndex];
+        } else {
+          state.historyIndex = state.history.length;
+          terminalInput.value = '';
+        }
+      }
+    });
+
+    // AI assistant removed from UI and JS
+
+    // =============================================
+    // THEME TOGGLE
+    // =============================================
+    function toggleTheme() {
+      const root = document.documentElement;
+      const isDark = getComputedStyle(root).getPropertyValue('--bg-base').trim() === '#0a0e1a';
+
+      if (isDark) {
+        // Light theme
+        root.style.setProperty('--bg-base', '#f8fafc');
+        root.style.setProperty('--bg-elevated', '#ffffff');
+        root.style.setProperty('--bg-panel', '#f1f5f9');
+        root.style.setProperty('--bg-input', '#e2e8f0');
+        root.style.setProperty('--text-primary', '#1e293b');
+        root.style.setProperty('--text-secondary', '#475569');
+        root.style.setProperty('--text-dim', '#94a3b8');
+        root.style.setProperty('--border', 'rgba(0, 0, 0, 0.08)');
+      } else {
+        // Dark theme
+        root.style.setProperty('--bg-base', '#0a0e1a');
+        root.style.setProperty('--bg-elevated', '#0f1421');
+        root.style.setProperty('--bg-panel', '#141927');
+        root.style.setProperty('--bg-input', '#1a1f2e');
+        root.style.setProperty('--text-primary', '#e4e9f7');
+        root.style.setProperty('--text-secondary', '#a0aec0');
+        root.style.setProperty('--text-dim', '#6b7280');
+        root.style.setProperty('--border', 'rgba(255, 255, 255, 0.08)');
+      }
+    }
+
+    // =============================================
+    // INITIALIZATION
+    // =============================================
+    window.addEventListener('load', () => {
+      appendOutput(`
+<span style="color: var(--accent-primary); font-weight: 700; font-size: 16px;">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span>
+<span style="color: var(--accent-primary); font-weight: 700; font-size: 16px;">  DevOps Command Center v2.0.0</span>
+<span style="color: var(--accent-primary); font-weight: 700; font-size: 16px;">  AI-Powered Infrastructure Management</span>
+<span style="color: var(--accent-primary); font-weight: 700; font-size: 16px;">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span>
+
+<span style="color: var(--text-secondary);">Initializing systems...</span>
+<span style="color: var(--accent-primary);">✓</span> Core modules loaded
+<span style="color: var(--accent-primary);">✓</span> AI assistant ready
+<span style="color: var(--accent-primary);">✓</span> Monitoring active
+<span style="color: var(--accent-primary);">✓</span> All systems operational
+
+<span style="color: var(--text-secondary);">Type <span style="color: var(--accent-primary); font-weight: 700;">help</span> for available commands</span>
+<span style="color: var(--text-secondary);">Click <span style="color: var(--accent-primary); font-weight: 700;">🤖</span> for AI assistant</span>
+      `, '');
+
+      terminalInput.focus();
+    });
+  </script>
+</body>
+
+</html>
